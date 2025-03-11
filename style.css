@@ -1,0 +1,28 @@
+body {
+  background-color: #ccc;
+  margin: 0;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+#downloadButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+/* Estilos para modo oscuro */
+body.dark {
+  background-color: #222;
+  color: #fff;
+}
+/* Eliminar reglas anteriores para textarea para preservar la caja de EasyMDE */
+/* Nuevas reglas para la caja de texto EasyMDE (CodeMirror) en modo claro */
+.CodeMirror {
+  background-color: #fff;
+  color: #000;
+}
+/* Nuevas reglas para la caja de texto EasyMDE (CodeMirror) en modo oscuro */
+body.dark .CodeMirror {
+  background-color: #000;
+  color: #fff;
+}
