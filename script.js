@@ -1,11 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const easyMDE = new EasyMDE({ 
-      element: document.getElementById("editor"),
-      initialValue: "# Hola Mundo\n\nEscribe **Markdown** y verás la previsualización en tiempo real.",
-      autoDownloadFontAwesome: false,
-      spellChecker: false
-  });
-  
+  var easyMDE = new EasyMDE({ element: document.getElementById("editor") });
+
   // Funcionalidad para descargar el contenido Markdown
   const downloadButton = document.getElementById("downloadButton");
   downloadButton.addEventListener('click', () => {
@@ -25,5 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const toggleDarkMode = document.getElementById("toggleDarkMode");
   toggleDarkMode.addEventListener('click', () => {
     document.body.classList.toggle('dark');
+  });
+
+  // Listener para alternar la visualización de la barra de herramientas (símbolos Markdown)
+  document.getElementById("toggleMarkdownSymbols").addEventListener("click", function(){
+    const toolbar = document.querySelector(".editor-toolbar");
+    if(toolbar) {
+      toolbar.style.display = (toolbar.style.display === "none") ? "" : "none";
+    }
   });
 });
