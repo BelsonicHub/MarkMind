@@ -1,3 +1,4 @@
+let fileHandle;
 // Asumimos que EasyMDE se inicializa de forma similar a:
 var easyMDE = new EasyMDE({ element: document.getElementById('editor') });
 
@@ -28,4 +29,53 @@ document.getElementById('downloadButton').addEventListener('click', function() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+});
+
+// Función para abrir el archivo usando la File System Access API
+async function openFile() {
+    try {
+        // Muestra el selector nativo y obtiene el handle del archivo
+        const [handle] = await window.showOpenFilePicker({
+            types: [{
+                description: 'Archivos Markdown',
+                accept: { 'text/markdown': ['.md'] }
+            }]
+        });
+        fileHandle = handle;
+        const file = await handle.getFile();
+        const text = await file.text();
+        document.getElementById('editor').value = text;
+        // Si implementas previsualización, la actualizas acá
+        // updatePreview();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// Función para guardar (actualizar) el archivo seleccionado
+async function saveFile() {
+    try {
+        if (fileHandle) {
+            const writable = await fileHandle.createWritable();
+            await writable.write(document.getElementById('editor').value);
+            await writable.close();
+            alert("Archivo actualizado exitosamente.");
+        } else {
+            alert("Primero debes abrir un archivo.");
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// Asignar la acción de abrir archivo a un botón (o elemento)
+document.getElementById('openFile').addEventListener('click', (e) => {
+    e.preventDefault();
+    openFile();
+});
+
+// Asignar la acción de guardar archivo al botón de descarga (ahora se actualiza el archivo)
+document.getElementById('downloadButton').addEventListener('click', (e) => {
+    e.preventDefault();
+    saveFile();
 });
