@@ -7,15 +7,21 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css" />
   <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
+  <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
 </head>
 <body>
   <header class="options-header">
     <div class="options-bar">
       <button id="downloadButton" class="hvr-grow">Download Markdown</button>
       <button id="openFileButton" class="hvr-grow">Open Markdown</button>
+      <button id="exportPDFButton" class="hvr-grow">Export to PDF</button>
+      <button id="exportHTMLButton" class="hvr-grow">Export to HTML</button>
     </div>
   </header>
   <textarea id="editor"></textarea>
+  <!-- Hidden div to render markdown content for PDF export -->
+  <div id="hiddenContent" style="display:none; padding: 20px;"></div>
   <script src="script.js"></script>
 </body>
 </html>
