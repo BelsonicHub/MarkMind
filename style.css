@@ -71,3 +71,10 @@ body {
 .editor-toolbar button.fa-list-ol:before {
     content: "\f0cb";
 }
+.EasyMDEContainer .editor-toolbar {
+    display: none;
+}
+
+.EasyMDEContainer .CodeMirror {
+    border-top: 1px solid #ddd;
+}

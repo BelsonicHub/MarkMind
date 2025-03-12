@@ -1,8 +1,23 @@
 document.addEventListener("DOMContentLoaded", async function() {
-    // Inicializar EasyMDE con la barra de herramientas deshabilitada
+    // Inicializar EasyMDE
     var easyMDE = new EasyMDE({ 
         element: document.getElementById("editor"),
-        toolbar: false, // Deshabilitar la barra de herramientas predeterminada
+        toolbar: [
+            "bold", "italic", "heading",
+            "|", "quote", "code", "unordered-list",
+            "|", "link", "image",
+            "|", "preview",
+            {
+                name: "generate-toc",
+                action: function() {
+                    if (pluginSystem.plugins.toc) {
+                        pluginSystem.plugins.toc.generateTOC(easyMDE);
+                    }
+                },
+                className: "fa fa-list-ol",
+                title: "Generate Table of Contents",
+            }
+        ]
     });
 
     // Funciones de edición
@@ -61,27 +76,6 @@ document.addEventListener("DOMContentLoaded", async function() {
             });
         }
     };
-
-    // Inicializar EasyMDE
-    var easyMDE = new EasyMDE({ 
-        element: document.getElementById("editor"),
-        toolbar: [
-            "bold", "italic", "heading",
-            "|", "quote", "code", "unordered-list",
-            "|", "link", "image",
-            "|", "preview",
-            {
-                name: "generate-toc",
-                action: function() {
-                    if (pluginSystem.plugins.toc) {
-                        pluginSystem.plugins.toc.generateTOC(easyMDE);
-                    }
-                },
-                className: "fa fa-list-ol",
-                title: "Generate Table of Contents",
-            }
-        ]
-    });
 
     // Plugin de Tabla de Contenidos
     const tocPlugin = {
