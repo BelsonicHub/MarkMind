@@ -78,3 +78,33 @@ body {
 .EasyMDEContainer .CodeMirror {
     border-top: 1px solid #ddd;
 }
+/* Estilos para plugins */
+.spell-check-toggle {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    margin: 0 5px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.spell-check-toggle.active {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #45a049;
+}
+
+.spell-check-toggle:hover {
+    background-color: #e0e0e0;
+}
+
+.spell-check-toggle.active:hover {
+    background-color: #45a049;
+}
+
+/* Estilo para resaltar errores ortográficos */
+.CodeMirror-line span[spellcheck="true"] {
+    text-decoration-line: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: red;
+}

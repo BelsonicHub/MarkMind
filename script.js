@@ -64,33 +64,62 @@ document.addEventListener("DOMContentLoaded", async function() {
         codemirror.replaceSelection(`\`${selectedText}\``);
     });
 
-    // Sistema de plugins
+    // Sistema de plugins mejorado
     const pluginSystem = {
         plugins: {},
+        hooks: {},
         register: function(name, plugin) {
             this.plugins[name] = plugin;
+            if (plugin.hooks) {
+                Object.entries(plugin.hooks).forEach(([hook, callback]) => {
+                    if (!this.hooks[hook]) {
+                        this.hooks[hook] = [];
+                    }
+                    this.hooks[hook].push(callback);
+                });
+            }
         },
         init: function(editor) {
             Object.values(this.plugins).forEach(plugin => {
                 if (plugin.init) plugin.init(editor);
             });
+        },
+        trigger: function(hookName, ...args) {
+            if (this.hooks[hookName]) {
+                return this.hooks[hookName].map(callback => callback(...args));
+            }
+            return [];
+        },
+        getPlugins: function() {
+            return Object.keys(this.plugins);
+        },
+        togglePlugin: function(name, enabled) {
+            if (this.plugins[name] && this.plugins[name].toggle) {
+                this.plugins[name].toggle(enabled);
+            }
         }
     };
 
-    // Plugin de Tabla de Contenidos
+    // Plugin de Tabla de Contenidos mejorado
     const tocPlugin = {
         init: function(editor) {
             this.editor = editor;
         },
+        hooks: {
+            'beforeSave': (content) => content,
+            'afterRender': () => {}
+        },
         generateTOC: function(editor) {
             const text = editor.value();
             const headings = text.match(/^#{1,6}.+$/gm) || [];
-            let toc = "# Table of Contents\n\n";
+            let toc = "# Tabla de Contenidos\n\n";
             
             headings.forEach(heading => {
                 const level = heading.match(/^#+/)[0].length - 1;
                 const title = heading.replace(/^#+\s*/, '');
-                const link = title.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, '-');
+                const link = title.toLowerCase()
+                    .replace(/[^\w\sáéíóúüñ]/g, '')
+                    .replace(/\s+/g, '-');
                 toc += `${' '.repeat(level * 2)}- [${title}](#${link})\n`;
             });
 
@@ -98,8 +127,52 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     };
 
+    // Plugin de Corrector Ortográfico
+    const spellCheckerPlugin = {
+        active: false,
+        init: function(editor) {
+            this.editor = editor;
+            this.setupSpellChecker();
+        },
+        toggle: function(enabled) {
+            this.active = enabled;
+            if (enabled) {
+                this.startSpellChecker();
+            } else {
+                this.stopSpellChecker();
+            }
+        },
+        setupSpellChecker: function() {
+            if ('spellcheck' in document.createElement('textarea')) {
+                const textArea = this.editor.codemirror.getInputField();
+                textArea.spellcheck = false; // Inicialmente desactivado
+                
+                const spellCheckButton = document.createElement('button');
+                spellCheckButton.innerHTML = '<i class="fa fa-check"></i> ABC';
+                spellCheckButton.className = 'hvr-grow spell-check-toggle';
+                spellCheckButton.title = 'Activar/Desactivar corrector ortográfico';
+                
+                document.querySelector('.edit-bar').appendChild(spellCheckButton);
+                
+                spellCheckButton.addEventListener('click', () => {
+                    this.toggle(!this.active);
+                    spellCheckButton.classList.toggle('active');
+                });
+            }
+        },
+        startSpellChecker: function() {
+            const textArea = this.editor.codemirror.getInputField();
+            textArea.spellcheck = true;
+        },
+        stopSpellChecker: function() {
+            const textArea = this.editor.codemirror.getInputField();
+            textArea.spellcheck = false;
+        }
+    };
+
     // Registrar plugins
     pluginSystem.register('toc', tocPlugin);
+    pluginSystem.register('spellChecker', spellCheckerPlugin);
     pluginSystem.init(easyMDE);
 
     // Función para exportar como HTML
