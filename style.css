@@ -23,6 +23,27 @@ body {
   cursor: pointer;
 }
 
+.edit-bar {
+  background-color: #f0f0f0;
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  gap: 5px;
+}
+
+.edit-bar button {
+  padding: 5px 10px;
+  background-color: #555;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.edit-bar button:hover {
+  background-color: #444;
+}
+
 #editor {
   background-color: #f7f7f7; /* Color claro para el área de edición */
   border: 1px solid #ccc;
@@ -42,4 +63,11 @@ body {
 .CodeMirror {
   background-color: #fff;
   color: #000;
+}
+.editor-toolbar button.fa-list-ol {
+    font-family: FontAwesome;
+}
+
+.editor-toolbar button.fa-list-ol:before {
+    content: "\f0cb";
 }

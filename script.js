@@ -1,6 +1,112 @@
 document.addEventListener("DOMContentLoaded", async function() {
-    // Inicializar EasyMDE en el textarea #editor
-    var easyMDE = new EasyMDE({ element: document.getElementById("editor") });
+    // Inicializar EasyMDE con la barra de herramientas deshabilitada
+    var easyMDE = new EasyMDE({ 
+        element: document.getElementById("editor"),
+        toolbar: false, // Deshabilitar la barra de herramientas predeterminada
+    });
+
+    // Funciones de edición
+    document.getElementById('boldButton').addEventListener('click', () => {
+        const codemirror = easyMDE.codemirror;
+        const selectedText = codemirror.getSelection();
+        codemirror.replaceSelection(`**${selectedText}**`);
+    });
+
+    document.getElementById('italicButton').addEventListener('click', () => {
+        const codemirror = easyMDE.codemirror;
+        const selectedText = codemirror.getSelection();
+        codemirror.replaceSelection(`*${selectedText}*`);
+    });
+
+    document.getElementById('headingButton').addEventListener('click', () => {
+        const codemirror = easyMDE.codemirror;
+        const selectedText = codemirror.getSelection();
+        codemirror.replaceSelection(`\n# ${selectedText}`);
+    });
+
+    document.getElementById('linkButton').addEventListener('click', () => {
+        const codemirror = easyMDE.codemirror;
+        const selectedText = codemirror.getSelection();
+        codemirror.replaceSelection(`[${selectedText}](url)`);
+    });
+
+    document.getElementById('imageButton').addEventListener('click', () => {
+        const codemirror = easyMDE.codemirror;
+        const selectedText = codemirror.getSelection();
+        codemirror.replaceSelection(`![${selectedText}](image-url)`);
+    });
+
+    document.getElementById('listButton').addEventListener('click', () => {
+        const codemirror = easyMDE.codemirror;
+        const selectedText = codemirror.getSelection();
+        const listItems = selectedText.split('\n').map(item => `- ${item}`).join('\n');
+        codemirror.replaceSelection(`\n${listItems}\n`);
+    });
+
+    document.getElementById('codeButton').addEventListener('click', () => {
+        const codemirror = easyMDE.codemirror;
+        const selectedText = codemirror.getSelection();
+        codemirror.replaceSelection(`\`${selectedText}\``);
+    });
+
+    // Sistema de plugins
+    const pluginSystem = {
+        plugins: {},
+        register: function(name, plugin) {
+            this.plugins[name] = plugin;
+        },
+        init: function(editor) {
+            Object.values(this.plugins).forEach(plugin => {
+                if (plugin.init) plugin.init(editor);
+            });
+        }
+    };
+
+    // Inicializar EasyMDE
+    var easyMDE = new EasyMDE({ 
+        element: document.getElementById("editor"),
+        toolbar: [
+            "bold", "italic", "heading",
+            "|", "quote", "code", "unordered-list",
+            "|", "link", "image",
+            "|", "preview",
+            {
+                name: "generate-toc",
+                action: function() {
+                    if (pluginSystem.plugins.toc) {
+                        pluginSystem.plugins.toc.generateTOC(easyMDE);
+                    }
+                },
+                className: "fa fa-list-ol",
+                title: "Generate Table of Contents",
+            }
+        ]
+    });
+
+    // Plugin de Tabla de Contenidos
+    const tocPlugin = {
+        init: function(editor) {
+            this.editor = editor;
+        },
+        generateTOC: function(editor) {
+            const text = editor.value();
+            const headings = text.match(/^#{1,6}.+$/gm) || [];
+            let toc = "# Table of Contents\n\n";
+            
+            headings.forEach(heading => {
+                const level = heading.match(/^#+/)[0].length - 1;
+                const title = heading.replace(/^#+\s*/, '');
+                const link = title.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, '-');
+                toc += `${' '.repeat(level * 2)}- [${title}](#${link})\n`;
+            });
+
+            editor.value(toc + '\n' + text);
+        }
+    };
+
+    // Registrar plugins
+    pluginSystem.register('toc', tocPlugin);
+    pluginSystem.init(easyMDE);
 
     // Función para exportar como HTML
     document.getElementById("exportHTMLButton").addEventListener("click", function() {
@@ -8,8 +114,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         const markdownText = easyMDE.value();
         const htmlContent = converter.makeHtml(markdownText);
         
-        const fullHtml = `
-        <!DOCTYPE html>
+        const fullHtml = `<!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
@@ -48,8 +153,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         iframe.style.display = 'none';
         document.body.appendChild(iframe);
         
-        iframe.contentDocument.write(`
-            <!DOCTYPE html>
+        iframe.contentDocument.write(`<!DOCTYPE html>
             <html>
             <head>
                 <style>

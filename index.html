@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
   <script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
   <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
@@ -19,6 +20,15 @@
       <button id="exportHTMLButton" class="hvr-grow">Export to HTML</button>
     </div>
   </header>
+  <div class="edit-bar">
+    <button id="boldButton" class="hvr-grow">Bold</button>
+    <button id="italicButton" class="hvr-grow">Italic</button>
+    <button id="headingButton" class="hvr-grow">Heading</button>
+    <button id="linkButton" class="hvr-grow">Link</button>
+    <button id="imageButton" class="hvr-grow">Image</button>
+    <button id="listButton" class="hvr-grow">List</button>
+    <button id="codeButton" class="hvr-grow">Code</button>
+  </div>
   <textarea id="editor"></textarea>
   <!-- Hidden div to render markdown content for PDF export -->
   <div id="hiddenContent" style="display:none; padding: 20px;"></div>
