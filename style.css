@@ -4,6 +4,33 @@ body {
   height: 100vh;
   font-family: Arial, sans-serif;
 }
+.options-header {
+  background-color: #555; /* Fondo gris enegrecido */
+  padding: 10px;
+}
+
+.options-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.options-bar button {
+  background: none; /* Eliminar fondo */
+  color: #fff;     /* Texto en blanco */
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+#editor {
+  background-color: #f7f7f7; /* Color claro para el área de edición */
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 100%;
+  height: 300px;
+  font-family: monospace;
+}
 #downloadButton {
   position: absolute;
   top: 10px;

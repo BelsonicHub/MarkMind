@@ -2,17 +2,20 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>main.html</title>
+  <title>index.html</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css" />
   <base href="./">
   <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 </head>
 <body>
-  <div style="display: flex; align-items: center; gap: 10px;">
-    <button id="downloadButton">Download Markdown</button>
-    <button id="openFileButton">Open Markdown</button>
-  </div>
+  <header class="options-header">
+    <div class="options-bar">
+      <button id="downloadButton" class="hvr-grow">Download Markdown</button>
+      <button id="openFileButton" class="hvr-grow">Open Markdown</button>
+    </div>
+  </header>
   <textarea id="editor"></textarea>
   <script src="script.js"></script>
 </body>
