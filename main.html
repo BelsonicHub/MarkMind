@@ -2,16 +2,14 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Editor Markdown con EasyMDE</title>
+  <title>main.html</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 </head>
 <body>
-  <button id="toggleDarkMode" style="position:absolute; top:10px; left:10px; z-index:10;">Modo Oscuro</button>
   <button id="downloadButton">Download Markdown</button>
-  <!-- Nuevo botón para alternar los símbolos de formateo Markdown -->
-  <button id="toggleMarkdownSymbols">Toggle Markdown Symbols</button>
+  <input type="file" id="openFile" accept=".md">
   <textarea id="editor"></textarea>
   <script src="script.js"></script>
 </body>

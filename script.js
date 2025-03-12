@@ -1,32 +1,31 @@
-document.addEventListener('DOMContentLoaded', () => {
-  var easyMDE = new EasyMDE({ element: document.getElementById("editor") });
+// Asumimos que EasyMDE se inicializa de forma similar a:
+var easyMDE = new EasyMDE({ element: document.getElementById('editor') });
 
-  // Funcionalidad para descargar el contenido Markdown
-  const downloadButton = document.getElementById("downloadButton");
-  downloadButton.addEventListener('click', () => {
-    const markdownText = easyMDE.value();
-    const blob = new Blob([markdownText], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+// Agregar manejador para abrir archivos Markdown
+document.getElementById('openFile').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            easyMDE.value(event.target.result);
+        };
+        reader.readAsText(file);
+    }
+});
+
+document.getElementById('downloadButton').addEventListener('click', function() {
+    // Retrieve Markdown content from the editor
+    var content = document.getElementById('editor').value;
+    // Create a Blob with the content
+    var blob = new Blob([content], { type: 'text/markdown' });
+    // Generate a URL for the Blob
+    var url = URL.createObjectURL(blob);
+    // Create a temporary anchor element and set the download filename
+    var a = document.createElement('a');
     a.href = url;
-    a.download = "contenido.md";
+    a.download = 'download.md';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  });
-  
-  // Funcionalidad para modo oscuro
-  const toggleDarkMode = document.getElementById("toggleDarkMode");
-  toggleDarkMode.addEventListener('click', () => {
-    document.body.classList.toggle('dark');
-  });
-
-  // Listener para alternar la visualización de la barra de herramientas (símbolos Markdown)
-  document.getElementById("toggleMarkdownSymbols").addEventListener("click", function(){
-    const toolbar = document.querySelector(".editor-toolbar");
-    if(toolbar) {
-      toolbar.style.display = (toolbar.style.display === "none") ? "" : "none";
-    }
-  });
 });
