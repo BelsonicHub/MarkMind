@@ -132,52 +132,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     };
 
-    // Plugin de Corrector Ortográfico
-    const spellCheckerPlugin = {
-        active: false,
-        init: function(editor) {
-            this.editor = editor;
-            this.setupSpellChecker();
-        },
-        toggle: function(enabled) {
-            this.active = enabled;
-            if (enabled) {
-                this.startSpellChecker();
-            } else {
-                this.stopSpellChecker();
-            }
-        },
-        setupSpellChecker: function() {
-            if ('spellcheck' in document.createElement('textarea')) {
-                const textArea = this.editor.codemirror.getInputField();
-                textArea.spellcheck = false; // Inicialmente desactivado
-                
-                const spellCheckButton = document.createElement('button');
-                spellCheckButton.innerHTML = '<i class="fa fa-check"></i> ABC';
-                spellCheckButton.className = 'hvr-grow spell-check-toggle';
-                spellCheckButton.title = 'Activar/Desactivar corrector ortográfico';
-                
-                document.querySelector('.edit-bar').appendChild(spellCheckButton);
-                
-                spellCheckButton.addEventListener('click', () => {
-                    this.toggle(!this.active);
-                    spellCheckButton.classList.toggle('active');
-                });
-            }
-        },
-        startSpellChecker: function() {
-            const textArea = this.editor.codemirror.getInputField();
-            textArea.spellcheck = true;
-        },
-        stopSpellChecker: function() {
-            const textArea = this.editor.codemirror.getInputField();
-            textArea.spellcheck = false;
-        }
-    };
-
     // Registrar plugins
     pluginSystem.register('toc', tocPlugin);
-    pluginSystem.register('spellChecker', spellCheckerPlugin);
     pluginSystem.init(easyMDE);
 
     // Estado de auto-guardado y configuración
