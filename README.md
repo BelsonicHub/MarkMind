@@ -1,12 +1,10 @@
 # NotepadMD
-Here are some of the key-features:
-## File System API
-The File System API (or more specifically the File System Access API) is designed to allow direct reading, writing and management of files on the user's system, but its support varies by browser. In Chromium-based browsers (such as the latest versions of Chrome, Edge and Opera) it is fully implemented.
-
-In contrast, in browsers such as Firefox and Safari (both desktop and mobile versions) the functionality is very limited or absent, meaning that operations such as overwriting existing files or accessing the file system natively are not available or are simulated by downloads. In addition, some mobile browsers (e.g. Chrome for Android or Samsung Internet) do not offer full support either.
-
-This difference in implementation is the reason why, in web applications, progressive enhancement techniques or libraries such as browser-fs-access are often used to provide a functional experience, adapting to the capabilities of the user's browser.
-# Electron version
+NotepadMD is a web application that functions as a simple Markdown editor. It allows users to write and edit text in this format, offering features such as:
+- Auto-save: Content is saved automatically (File System API may not work with some browsers ej. Firefox and Safari).
+. Import and export: You can open Markdown files, download them, or export them in PDF and HTML formats.
+. Formatting tools: Includes buttons to apply bold, italics, headings, links, images, lists and code blocks.
+In short, it's a handy tool for working with Markdown quickly and easily.
+## Electron version
 The electron version has additional features to the web version:
 - Auto-Save
 - Offline-Mode
