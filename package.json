@@ -1,0 +1,29 @@
+{
+  "name": "notepadmd",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BelsonicHub/NotepadMD.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/BelsonicHub/NotepadMD/issues"
+  },
+  "homepage": "https://github.com/BelsonicHub/NotepadMD#readme",
+  "devDependencies": {
+    "electron": "^25.3.1",
+    "electron-builder": "^24.4.0"
+  },
+  "dependencies": {
+    "electron-store": "^10.0.1"
+  }
+}
