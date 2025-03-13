@@ -2,6 +2,11 @@ document.addEventListener("DOMContentLoaded", async function() {
     // Inicializar EasyMDE
     var easyMDE = new EasyMDE({ 
         element: document.getElementById("editor"),
+        autosave: {
+            enabled: true,
+            delay: 1000,
+            uniqueId: "notepadmd-autosave"
+        },
         toolbar: [
             "bold", "italic", "heading",
             "|", "quote", "code", "unordered-list",
@@ -15,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                     }
                 },
                 className: "fa fa-list-ol",
-                title: "Generate Table of Contents",
+                title: "Generar Tabla de Contenidos",
             }
         ]
     });
@@ -175,6 +180,138 @@ document.addEventListener("DOMContentLoaded", async function() {
     pluginSystem.register('spellChecker', spellCheckerPlugin);
     pluginSystem.init(easyMDE);
 
+    // Estado de auto-guardado y configuración
+    let isAutoSaveEnabled = true;
+    let autoSaveTimer;
+    let idleTimer;
+    let currentSettings = {};
+    const AUTO_SAVE_INTERVAL = 5 * 60 * 1000; // 5 minutos
+    const IDLE_DELAY = 2000; // 2 segundos
+
+    // Botón de alternar auto-guardado
+    const autoSaveToggle = document.getElementById('autoSaveToggle');
+    autoSaveToggle.addEventListener('click', () => {
+        isAutoSaveEnabled = !isAutoSaveEnabled;
+        autoSaveToggle.textContent = `Auto-guardado: ${isAutoSaveEnabled ? 'ON' : 'OFF'}`;
+        
+        if (isAutoSaveEnabled) {
+            setupAutoSave();
+        } else {
+            clearInterval(autoSaveTimer);
+            clearTimeout(idleTimer);
+        }
+    });
+
+    // Función para configurar el auto-guardado
+    function setupAutoSave() {
+        if (!isAutoSaveEnabled) return;
+
+        // Limpiar temporizadores existentes
+        clearInterval(autoSaveTimer);
+        clearTimeout(idleTimer);
+
+        // Auto-guardado en intervalo regular
+        autoSaveTimer = setInterval(async () => {
+            await saveContent();
+        }, AUTO_SAVE_INTERVAL);
+
+        // Guardar en inactividad
+        easyMDE.codemirror.on('change', () => {
+            if (!isAutoSaveEnabled) return;
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(async () => {
+                await saveContent();
+            }, IDLE_DELAY);
+        });
+    }
+
+    async function saveContent() {
+        const content = easyMDE.value();
+        try {
+            const result = await window.electron.ipcRenderer.invoke('auto-save', content);
+            if (!result.success) {
+                console.warn('Auto-save failed:', result.error);
+            }
+        } catch (error) {
+            console.error('Error during auto-save:', error);
+        }
+    }
+
+    // Start auto-save when a file is opened
+    document.getElementById("openFileButton").addEventListener("click", async function() {
+        if (!window.showOpenFilePicker) {
+            alert("El API File System Access no está soportado en este navegador.");
+            return;
+        }
+        try {
+            const [fileHandle] = await window.showOpenFilePicker({
+                types: [{
+                    description: "Markdown Files",
+                    accept: { "text/markdown": [".md", ".markdown"] }
+                }]
+            });
+            const file = await fileHandle.getFile();
+            const text = await file.text();
+            easyMDE.value(text);
+            currentFileHandle = fileHandle;
+            if (isAutoSaveEnabled) {
+                setupAutoSave(); // Only start auto-save if enabled
+            }
+        } catch (err) {
+            console.error("Error al abrir el archivo:", err);
+        }
+    });
+
+    // Handle dropped files with auto-save
+    const dropZone = document.body;
+    
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.backgroundColor = '#e1e1e1';
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.backgroundColor = '#ccc';
+    });
+
+    dropZone.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.style.backgroundColor = '#ccc';
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.name.toLowerCase().endswith('.md') || file.name.toLowerCase().endswith('.markdown')) {
+                try {
+                    const result = await window.electron.ipcRenderer.invoke('file-dropped', file.path);
+                    if (result.success) {
+                        easyMDE.value(result.content);
+                        currentFileHandle = null;
+                        if (isAutoSaveEnabled) {
+                            setupAutoSave(); // Only start auto-save if enabled
+                        }
+                    } else {
+                        alert('Error reading file: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('Error processing file: ' + error.message);
+                }
+            } else {
+                alert('Please drop a Markdown file (.md or .markdown)');
+            }
+        }
+    });
+
+    // Clean up auto-save timers when the window is closed
+    window.addEventListener('beforeunload', () => {
+        clearInterval(autoSaveTimer);
+        clearTimeout(idleTimer);
+    });
+
     // Función para exportar como HTML
     document.getElementById("exportHTMLButton").addEventListener("click", function() {
         const converter = new showdown.Converter();
@@ -294,8 +431,114 @@ document.addEventListener("DOMContentLoaded", async function() {
             const text = await file.text();
             easyMDE.value(text);
             currentFileHandle = fileHandle;
+            if (isAutoSaveEnabled) {
+                setupAutoSave(); // Only start auto-save if enabled
+            }
         } catch (err) {
             console.error("Error al abrir el archivo:", err);
         }
     });
+
+    // Keyboard shortcut handlers
+    window.electron.ipcRenderer.on('menu-open', () => {
+        document.getElementById('openFileButton').click();
+    });
+
+    window.electron.ipcRenderer.on('menu-save', () => {
+        document.getElementById('downloadButton').click();
+    });
+
+    window.electron.ipcRenderer.on('menu-export-html', () => {
+        document.getElementById('exportHTMLButton').click();
+    });
+
+    window.electron.ipcRenderer.on('menu-export-pdf', () => {
+        document.getElementById('exportPDFButton').click();
+    });
+
+    window.electron.ipcRenderer.on('menu-format', (type) => {
+        switch (type) {
+            case 'bold':
+                document.getElementById('boldButton').click();
+                break;
+            case 'italic':
+                document.getElementById('italicButton').click();
+                break;
+            case 'link':
+                document.getElementById('linkButton').click();
+                break;
+        }
+    });
+
+    window.electron.ipcRenderer.on('settings-updated', (settings) => {
+        currentSettings = { ...currentSettings, ...settings };
+        applySettings(currentSettings);
+    });
+
+    window.electron.ipcRenderer.on('show-settings', () => {
+        showSettingsDialog();
+    });
+
+    // Función para aplicar configuraciones
+    function applySettings(settings) {
+        if (settings.theme) {
+            document.body.className = settings.theme;
+        }
+        if (settings.fontSize) {
+            document.documentElement.style.setProperty('--editor-font-size', `${settings.fontSize}px`);
+        }
+        if (settings.autosaveInterval) {
+            AUTO_SAVE_INTERVAL = settings.autosaveInterval;
+            if (isAutoSaveEnabled) {
+                setupAutoSave(); // Reiniciar auto-guardado con nuevo intervalo
+            }
+        }
+    }
+
+    // Función para mostrar el diálogo de configuración
+    function showSettingsDialog() {
+        const dialog = document.createElement('div');
+        dialog.className = 'settings-dialog';
+        dialog.innerHTML = `
+            <div class="settings-content">
+                <h2>Settings</h2>
+                <div class="setting-item">
+                    <label>Theme:</label>
+                    <select id="themeSelect">
+                        <option value="light" ${currentSettings.theme === 'light' ? 'selected' : ''}>Light</option>
+                        <option value="dark" ${currentSettings.theme === 'dark' ? 'selected' : ''}>Dark</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>Font Size:</label>
+                    <input type="number" id="fontSizeInput" value="${currentSettings.fontSize || 14}" min="8" max="32">
+                </div>
+                <div class="setting-item">
+                    <label>Autosave Interval (ms):</label>
+                    <input type="number" id="autosaveInput" value="${currentSettings.autosaveInterval || 30000}" min="5000" step="1000">
+                </div>
+                <div class="setting-actions">
+                    <button id="saveSettings">Save</button>
+                    <button id="cancelSettings">Cancel</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        document.getElementById('saveSettings').onclick = async () => {
+            const newSettings = {
+                theme: document.getElementById('themeSelect').value,
+                fontSize: parseInt(document.getElementById('fontSizeInput').value),
+                autosaveInterval: parseInt(document.getElementById('autosaveInput').value)
+            };
+
+            await window.electron.ipcRenderer.invoke('update-settings', newSettings);
+            document.body.removeChild(dialog);
+        };
+
+        document.getElementById('cancelSettings').onclick = () => {
+            document.body.removeChild(dialog);
+        };
+    }
 });
