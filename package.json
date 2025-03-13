@@ -1,7 +1,7 @@
 {
   "name": "notepadmd",
   "version": "1.0.0",
-  "description": "",
+  "description": "A markdown editor built with Electron",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -21,7 +21,7 @@
   "homepage": "https://github.com/BelsonicHub/NotepadMD#readme",
   "devDependencies": {
     "electron": "^25.3.1",
-    "electron-builder": "^24.4.0"
+    "electron-builder": "^24.13.3"
   },
   "dependencies": {
     "electron-store": "^10.0.1"
@@ -29,8 +29,10 @@
   "build": {
     "appId": "com.notepadmd.app",
     "win": {
-      "target": ["nsis"],
-      "arch": ["x64"]
+      "target": [{
+        "target": "nsis",
+        "arch": ["x64"]
+      }]
     }
   }
 }
