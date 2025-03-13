@@ -25,5 +25,12 @@
   },
   "dependencies": {
     "electron-store": "^10.0.1"
+  },
+  "build": {
+    "appId": "com.notepadmd.app",
+    "win": {
+      "target": ["nsis"],
+      "arch": ["x64"]
+    }
   }
 }
