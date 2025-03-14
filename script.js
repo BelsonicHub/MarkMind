@@ -318,8 +318,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         const converter = new showdown.Converter({
             tables: true,
             tasklists: true,
-            strikethrough: true
+            strikethrough: true,
+            parseImgDimensions: true,
+            simplifiedAutoLink: true,
+            ghCompatibleHeaderId: true,
+            extensions: ['tables']
         });
+        converter.setFlavor('github');
         const markdownText = easyMDE.value();
         const htmlContent = converter.makeHtml(markdownText);
         
@@ -333,9 +338,16 @@ document.addEventListener("DOMContentLoaded", async function() {
                 img { max-width: 100%; }
                 code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; }
                 pre { background: #f4f4f4; padding: 15px; border-radius: 5px; }
-                table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+                table { border-collapse: collapse; width: 100%; margin: 1em 0; page-break-inside: avoid; }
                 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
                 th { background-color: #f4f4f4; }
+                tr:nth-child(even) { background-color: #f8f8f8; }
+                tr:hover { background-color: #f5f5f5; }
+                @media print {
+                    table { page-break-inside: avoid; }
+                    tr { page-break-inside: avoid; }
+                    td { page-break-inside: avoid; }
+                }
             </style>
         </head>
         <body>
@@ -357,7 +369,16 @@ document.addEventListener("DOMContentLoaded", async function() {
     // Función para exportar como PDF
     document.getElementById("exportPDFButton").addEventListener("click", async function() {
         const markdownText = easyMDE.value();
-        const converter = new showdown.Converter();
+        const converter = new showdown.Converter({
+            tables: true,
+            tasklists: true,
+            strikethrough: true,
+            parseImgDimensions: true,
+            simplifiedAutoLink: true,
+            ghCompatibleHeaderId: true,
+            extensions: ['tables']
+        });
+        converter.setFlavor('github');
         const htmlContent = converter.makeHtml(markdownText);
 
         // Crear un iframe oculto para imprimir
@@ -365,33 +386,137 @@ document.addEventListener("DOMContentLoaded", async function() {
         iframe.style.display = 'none';
         document.body.appendChild(iframe);
         
-        iframe.contentDocument.write(`<!DOCTYPE html>
+        const pdfContent = `<!DOCTYPE html>
             <html>
             <head>
+                <meta charset="UTF-8">
                 <style>
-                    body { max-width: 800px; margin: 40px auto; padding: 0 20px; font-family: -apple-system, system-ui, sans-serif; }
-                    img { max-width: 100%; }
-                    code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; }
-                    pre { background: #f4f4f4; padding: 15px; border-radius: 5px; }
                     @media print {
-                        body { max-width: none; margin: 0; }
-                        @page { margin: 2cm; }
+                        body {
+                            margin: 0;
+                            padding: 2cm;
+                            font-family: -apple-system, system-ui, sans-serif;
+                            font-size: 12pt;
+                        }
+                        
+                        @page {
+                            size: A4;
+                            margin: 0;
+                        }
+
+                        /* Estilos específicos para tablas en PDF */
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            break-inside: auto;
+                            margin: 1em 0;
+                        }
+                        
+                        thead {
+                            display: table-header-group;
+                        }
+                        
+                        tr {
+                            page-break-inside: avoid;
+                            page-break-after: auto;
+                        }
+                        
+                        td, th {
+                            border: 1px solid #000;
+                            padding: 8px;
+                            text-align: left;
+                            font-size: 11pt;
+                            page-break-inside: avoid;
+                        }
+                        
+                        th {
+                            background-color: #f0f0f0 !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+
+                        tr:nth-child(even) {
+                            background-color: #f9f9f9 !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+
+                        /* Otros estilos para el PDF */
+                        img { max-width: 100%; }
+                        pre, code {
+                            background-color: #f5f5f5 !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                            padding: 2px 5px;
+                            border-radius: 3px;
+                            font-family: monospace;
+                        }
+                    }
+
+                    /* Estilos para la vista previa */
+                    body {
+                        font-family: -apple-system, system-ui, sans-serif;
+                        max-width: 21cm;
+                        margin: 0 auto;
+                        padding: 2cm;
+                        background: white;
+                    }
+                    
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin: 1em 0;
+                    }
+                    
+                    td, th {
+                        border: 1px solid #000;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    
+                    th {
+                        background-color: #f0f0f0;
+                    }
+
+                    tr:nth-child(even) {
+                        background-color: #f9f9f9;
                     }
                 </style>
             </head>
-            <body>
+            <body class="pdf-content">
                 ${htmlContent}
             </body>
-            </html>
-        `);
+            </html>`;
 
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-        
-        // Eliminar el iframe después de un breve delay
-        setTimeout(() => {
-            document.body.removeChild(iframe);
-        }, 500);
+        // Escribir el contenido en el iframe
+        iframe.contentDocument.write(pdfContent);
+        iframe.contentDocument.close();
+
+        // Esperar a que todas las imágenes y recursos se carguen
+        const loadPromises = Array.from(iframe.contentDocument.images).map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => {
+                img.onload = resolve;
+                img.onerror = resolve;
+            });
+        });
+
+        // Esperar a que todo esté cargado antes de imprimir
+        Promise.all(loadPromises).then(() => {
+            setTimeout(() => {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch (error) {
+                    console.error('Error al imprimir:', error);
+                } finally {
+                    // Eliminar el iframe después de un tiempo
+                    setTimeout(() => {
+                        document.body.removeChild(iframe);
+                    }, 500);
+                }
+            }, 500); // Dar tiempo adicional para el renderizado
+        });
     });
 
     let currentFileHandle = null; // almacena el file handle del archivo abierto
