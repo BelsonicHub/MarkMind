@@ -7,10 +7,15 @@ document.addEventListener("DOMContentLoaded", async function() {
             delay: 1000,
             uniqueId: "notepadmd-autosave"
         },
+        tabSize: 4,
+        renderingConfig: {
+            singleLineBreaks: false,
+            codeSyntaxHighlighting: true
+        },
         toolbar: [
             "bold", "italic", "heading",
             "|", "quote", "code", "unordered-list",
-            "|", "link", "image",
+            "|", "link", "image", "table",
             "|", "preview",
             {
                 name: "generate-toc",
@@ -23,6 +28,13 @@ document.addEventListener("DOMContentLoaded", async function() {
                 title: "Generar Tabla de Contenidos",
             }
         ]
+    });
+
+    // Configurar showdown para soportar tablas
+    const converter = new showdown.Converter({
+        tables: true,
+        tasklists: true,
+        strikethrough: true
     });
 
     // Funciones de edición
@@ -67,6 +79,39 @@ document.addEventListener("DOMContentLoaded", async function() {
         const codemirror = easyMDE.codemirror;
         const selectedText = codemirror.getSelection();
         codemirror.replaceSelection(`\`${selectedText}\``);
+    });
+
+    document.getElementById('tableButton').addEventListener('click', () => {
+        const codemirror = easyMDE.codemirror;
+        const tableTemplate = `
+| Encabezado 1 | Encabezado 2 | Encabezado 3 |
+|--------------|--------------|--------------|
+| Celda 1      | Celda 2      | Celda 3      |
+| Celda 4      | Celda 5      | Celda 6      |`;
+        
+        const cursor = codemirror.getCursor();
+        const selection = codemirror.getSelection();
+        
+        if (selection) {
+            // Si hay texto seleccionado, convertirlo en tabla
+            const rows = selection.split('\n');
+            const numCols = rows[0].split(/\s+/).length;
+            
+            // Crear encabezados
+            let table = '| ' + rows[0].split(/\s+/).join(' | ') + ' |\n';
+            // Añadir separador
+            table += '|' + ' --- |'.repeat(numCols) + '\n';
+            // Añadir resto de filas
+            for (let i = 1; i < rows.length; i++) {
+                if (rows[i].trim()) {
+                    table += '| ' + rows[i].split(/\s+/).join(' | ') + ' |\n';
+                }
+            }
+            codemirror.replaceSelection(table);
+        } else {
+            // Si no hay selección, insertar plantilla
+            codemirror.replaceRange('\n' + tableTemplate + '\n', cursor);
+        }
     });
 
     // Sistema de plugins mejorado
@@ -270,7 +315,11 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Función para exportar como HTML
     document.getElementById("exportHTMLButton").addEventListener("click", function() {
-        const converter = new showdown.Converter();
+        const converter = new showdown.Converter({
+            tables: true,
+            tasklists: true,
+            strikethrough: true
+        });
         const markdownText = easyMDE.value();
         const htmlContent = converter.makeHtml(markdownText);
         
@@ -284,6 +333,9 @@ document.addEventListener("DOMContentLoaded", async function() {
                 img { max-width: 100%; }
                 code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; }
                 pre { background: #f4f4f4; padding: 15px; border-radius: 5px; }
+                table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f4f4f4; }
             </style>
         </head>
         <body>
