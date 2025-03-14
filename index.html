@@ -19,6 +19,11 @@
       <button id="exportPDFButton" class="hvr-grow">Export to PDF</button>
       <button id="exportHTMLButton" class="hvr-grow">Export to HTML</button>
       <button id="autoSaveToggle" class="hvr-grow">Auto-save: ON</button>
+      <select id="previewMode" class="hvr-grow">
+        <option value="disabled">Vista previa desactivada</option>
+        <option value="split">Vista previa dividida</option>
+        <option value="inline">Vista previa en línea</option>
+      </select>
     </div>
   </header>
   <div class="edit-bar">
@@ -31,7 +36,10 @@
     <button id="codeButton" class="hvr-grow">Code</button>
     <button id="tableButton" class="hvr-grow">Table</button>
   </div>
-  <textarea id="editor"></textarea>
+  <div id="editorContainer">
+    <textarea id="editor"></textarea>
+    <div id="preview" class="preview-panel"></div>
+  </div>
   <div id="hiddenContent" style="display:none; padding: 20px;"></div>
   <script src="script.js"></script>
 </body>

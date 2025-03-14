@@ -30,6 +30,37 @@ document.addEventListener("DOMContentLoaded", async function() {
         ]
     });
 
+    // Preview mode functionality
+    const editorContainer = document.getElementById('editorContainer');
+    const previewPanel = document.getElementById('preview');
+    const previewModeSelect = document.getElementById('previewMode');
+
+    function updatePreview() {
+        const content = easyMDE.value();
+        previewPanel.innerHTML = converter.makeHtml(content);
+    }
+
+    // Add event listeners for preview mode
+    previewModeSelect.addEventListener('change', function() {
+        const mode = this.value;
+        editorContainer.classList.remove('preview-disabled', 'preview-split', 'preview-inline');
+        editorContainer.classList.add(`preview-${mode}`);
+
+        if (mode !== 'disabled') {
+            updatePreview();
+        }
+    });
+
+    // Update preview when content changes
+    easyMDE.codemirror.on('change', () => {
+        if (previewModeSelect.value !== 'disabled') {
+            updatePreview();
+        }
+    });
+
+    // Initialize in disabled mode
+    editorContainer.classList.add('preview-disabled');
+
     // Configurar showdown para soportar tablas
     const converter = new showdown.Converter({
         tables: true,
