@@ -33,18 +33,37 @@ body {
     background-color: #888;
 }
 
-/* Ocultar botones de open/save en Electron */
+/* Ocultar elementos de la barra superior en Electron */
 html.electron-app #openFileButton,
 html.electron-app #downloadButton,
+html.electron-app #exportPDFButton,
+html.electron-app #exportHTMLButton,
+html.electron-app #autoSaveToggle,
+html.electron-app #previewMode,
 html.electron-app body #openFileButton,
 html.electron-app body #downloadButton,
+html.electron-app body #exportPDFButton,
+html.electron-app body #exportHTMLButton,
+html.electron-app body #autoSaveToggle,
+html.electron-app body #previewMode,
 body.electron-app #openFileButton,
-body.electron-app #downloadButton {
+body.electron-app #downloadButton,
+body.electron-app #exportPDFButton,
+body.electron-app #exportHTMLButton,
+body.electron-app #autoSaveToggle,
+body.electron-app #previewMode {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
     position: absolute !important;
     pointer-events: none !important;
+}
+
+/* Ajustar el espaciado cuando los elementos están ocultos en Electron */
+html.electron-app .options-bar,
+body.electron-app .options-bar {
+    justify-content: flex-end !important;
+    padding: 0 10px !important;
 }
 
 .edit-bar {

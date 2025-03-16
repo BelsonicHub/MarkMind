@@ -253,6 +253,30 @@ async function createWindow() {
           click: () => win.webContents.send('menu-format', 'link')
         }
       ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        {
+          label: 'Preview Mode',
+          submenu: [
+            {
+              label: 'Basic View',
+              type: 'radio',
+              checked: true,
+              click: () => win.webContents.send('menu-preview-mode', 'disabled')
+            },
+            {
+              label: 'Split View',
+              type: 'radio',
+              click: () => win.webContents.send('menu-preview-mode', 'split')
+            }
+          ]
+        },
+        { type: 'separator' },
+        { role: 'toggleDevTools' },
+        { role: 'reload' }
+      ]
     }
   ];
 

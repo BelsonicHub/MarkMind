@@ -662,6 +662,13 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     });
 
+    // Añadir manejador para el modo de vista previa desde el menú
+    window.electron.ipcRenderer.on('menu-preview-mode', (mode) => {
+        const previewSelect = document.getElementById('previewMode');
+        previewSelect.value = mode;
+        previewSelect.dispatchEvent(new Event('change'));
+    });
+
     window.electron.ipcRenderer.on('settings-updated', (settings) => {
         currentSettings = { ...currentSettings, ...settings };
         applySettings(currentSettings);

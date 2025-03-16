@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('electron', {
                 'menu-export-html', 
                 'menu-export-pdf', 
                 'menu-format',
+                'menu-preview-mode',
                 'settings-updated',
                 'show-settings'
             ];
