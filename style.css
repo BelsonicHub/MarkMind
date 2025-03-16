@@ -33,7 +33,19 @@ body {
     background-color: #888;
 }
 
-/* ...resto de estilos existentes... */
+/* Ocultar botones de open/save en Electron */
+html.electron-app #openFileButton,
+html.electron-app #downloadButton,
+html.electron-app body #openFileButton,
+html.electron-app body #downloadButton,
+body.electron-app #openFileButton,
+body.electron-app #downloadButton {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    pointer-events: none !important;
+}
 
 .edit-bar {
   background-color: #f0f0f0;

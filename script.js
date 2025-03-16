@@ -1,3 +1,8 @@
+// Detectar Electron inmediatamente
+if (window.electron) {
+    document.body.classList.add('electron-app');
+}
+
 document.addEventListener("DOMContentLoaded", async function() {
     // Inicializar EasyMDE
     var easyMDE = new EasyMDE({ 
@@ -259,13 +264,18 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     async function saveContent() {
         const content = easyMDE.value();
-        try {
-            const result = await window.electron.ipcRenderer.invoke('auto-save', content);
-            if (!result.success) {
-                console.warn('Auto-save failed:', result.error);
+        if (window.electron) {
+            try {
+                const result = await window.electron.ipcRenderer.invoke('auto-save', content);
+                if (!result.success) {
+                    console.warn('Auto-save failed:', result.error);
+                }
+            } catch (error) {
+                console.error('Error during auto-save:', error);
             }
-        } catch (error) {
-            console.error('Error during auto-save:', error);
+        } else {
+            // Versión web - usar localStorage como fallback
+            localStorage.setItem('notepadmd-autosave', content);
         }
     }
 
@@ -345,7 +355,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     });
 
     // Función para exportar como HTML
-    document.getElementById("exportHTMLButton").addEventListener("click", function() {
+    document.getElementById("exportHTMLButton").addEventListener("click", async function() {
         const converter = new showdown.Converter({
             tables: true,
             tasklists: true,
@@ -369,11 +379,10 @@ document.addEventListener("DOMContentLoaded", async function() {
                 img { max-width: 100%; }
                 code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; }
                 pre { background: #f4f4f4; padding: 15px; border-radius: 5px; }
-                table { border-collapse: collapse; width: 100%; margin: 1em 0; page-break-inside: avoid; }
+                table { border-collapse: collapse; width: 100%; margin: 1em 0; }
                 th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
                 th { background-color: #f4f4f4; }
                 tr:nth-child(even) { background-color: #f8f8f8; }
-                tr:hover { background-color: #f5f5f5; }
                 @media print {
                     table { page-break-inside: avoid; }
                     tr { page-break-inside: avoid; }
@@ -386,15 +395,29 @@ document.addEventListener("DOMContentLoaded", async function() {
         </body>
         </html>`;
 
-        const blob = new Blob([fullHtml], { type: "text/html" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "document.html";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        if (window.electron) {
+            // Versión Electron
+            try {
+                const result = await window.electron.ipcRenderer.invoke('export-html', fullHtml);
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Error al exportar HTML:', error);
+                alert('Error al exportar HTML: ' + error.message);
+            }
+        } else {
+            // Versión web
+            const blob = new Blob([fullHtml], { type: "text/html" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "document.html";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
     });
 
     // Función para exportar como PDF
@@ -412,12 +435,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         converter.setFlavor('github');
         const htmlContent = converter.makeHtml(markdownText);
 
-        // Crear un iframe oculto para imprimir
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        
-        const pdfContent = `<!DOCTYPE html>
+        // Contenido HTML para impresión
+        const printContent = `<!DOCTYPE html>
             <html>
             <head>
                 <meta charset="UTF-8">
@@ -435,7 +454,6 @@ document.addEventListener("DOMContentLoaded", async function() {
                             margin: 0;
                         }
 
-                        /* Estilos específicos para tablas en PDF */
                         table {
                             width: 100%;
                             border-collapse: collapse;
@@ -463,109 +481,100 @@ document.addEventListener("DOMContentLoaded", async function() {
                         th {
                             background-color: #f0f0f0 !important;
                             -webkit-print-color-adjust: exact;
-                            print-color-adjust: exact;
                         }
 
                         tr:nth-child(even) {
                             background-color: #f9f9f9 !important;
                             -webkit-print-color-adjust: exact;
-                            print-color-adjust: exact;
                         }
 
-                        /* Otros estilos para el PDF */
                         img { max-width: 100%; }
                         pre, code {
                             background-color: #f5f5f5 !important;
                             -webkit-print-color-adjust: exact;
-                            print-color-adjust: exact;
                             padding: 2px 5px;
                             border-radius: 3px;
                             font-family: monospace;
                         }
                     }
-
-                    /* Estilos para la vista previa */
-                    body {
-                        font-family: -apple-system, system-ui, sans-serif;
-                        max-width: 21cm;
-                        margin: 0 auto;
-                        padding: 2cm;
-                        background: white;
-                    }
-                    
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin: 1em 0;
-                    }
-                    
-                    td, th {
-                        border: 1px solid #000;
-                        padding: 8px;
-                        text-align: left;
-                    }
-                    
-                    th {
-                        background-color: #f0f0f0;
-                    }
-
-                    tr:nth-child(even) {
-                        background-color: #f9f9f9;
-                    }
                 </style>
             </head>
-            <body class="pdf-content">
+            <body>
                 ${htmlContent}
             </body>
             </html>`;
 
-        // Escribir el contenido en el iframe
-        iframe.contentDocument.write(pdfContent);
-        iframe.contentDocument.close();
-
-        // Esperar a que todas las imágenes y recursos se carguen
-        const loadPromises = Array.from(iframe.contentDocument.images).map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise(resolve => {
-                img.onload = resolve;
-                img.onerror = resolve;
-            });
-        });
-
-        // Esperar a que todo esté cargado antes de imprimir
-        Promise.all(loadPromises).then(() => {
-            setTimeout(() => {
-                try {
-                    iframe.contentWindow.focus();
-                    iframe.contentWindow.print();
-                } catch (error) {
-                    console.error('Error al imprimir:', error);
-                } finally {
-                    // Eliminar el iframe después de un tiempo
-                    setTimeout(() => {
-                        document.body.removeChild(iframe);
-                    }, 500);
+        if (window.electron) {
+            // Versión Electron
+            try {
+                const result = await window.electron.ipcRenderer.invoke('export-pdf');
+                if (!result.success) {
+                    throw new Error(result.error);
                 }
-            }, 500); // Dar tiempo adicional para el renderizado
-        });
+            } catch (error) {
+                console.error('Error al exportar PDF:', error);
+                alert('Error al exportar PDF: ' + error.message);
+            }
+        } else {
+            // Versión web - Usar el diálogo de impresión del navegador
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            
+            iframe.contentDocument.write(printContent);
+            iframe.contentDocument.close();
+
+            // Esperar a que las imágenes se carguen
+            const loadPromises = Array.from(iframe.contentDocument.images).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            });
+
+            Promise.all(loadPromises).then(() => {
+                setTimeout(() => {
+                    try {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                    } catch (error) {
+                        console.error('Error al imprimir:', error);
+                        alert('Error al imprimir: ' + error.message);
+                    } finally {
+                        setTimeout(() => {
+                            document.body.removeChild(iframe);
+                        }, 500);
+                    }
+                }, 500);
+            });
+        }
     });
 
     let currentFileHandle = null; // almacena el file handle del archivo abierto
+    let currentFilePath = null; // Para mantener la ruta del archivo actual
 
-    // Modifica el botón de descarga para sobrescribir el archivo si se ha abierto uno
+    // Modifica el botón de descarga/guardado
     document.getElementById("downloadButton").addEventListener("click", async function() {
         const markdownText = easyMDE.value();
-        if (currentFileHandle) {
+        if (window.electron) {
             try {
-                const writable = await currentFileHandle.createWritable();
-                await writable.write(markdownText);
-                await writable.close();
-                alert("El archivo ha sido sobrescrito.");
+                const result = await window.electron.ipcRenderer.invoke('save-file', {
+                    content: markdownText,
+                    filePath: currentFilePath
+                });
+                
+                if (result.success) {
+                    currentFilePath = result.filePath;
+                } else {
+                    throw new Error(result.error);
+                }
             } catch (err) {
-                console.error("Error al sobrescribir el archivo:", err);
+                console.error("Error al guardar el archivo:", err);
+                alert("Error al guardar el archivo: " + err.message);
             }
         } else {
-            // Fallback: descarga como nuevo archivo
+            // Fallback para la versión web
             const blob = new Blob([markdownText], { type: "text/markdown" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -578,28 +587,47 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     });
 
-    // Actualiza el botón de abrir archivo usando el File System Access API
+    // Actualiza el botón de abrir archivo
     document.getElementById("openFileButton").addEventListener("click", async function() {
-        if (!window.showOpenFilePicker) {
-            alert("El API File System Access no está soportado en este navegador.");
-            return;
-        }
-        try {
-            const [fileHandle] = await window.showOpenFilePicker({
-                types: [{
-                    description: "Markdown Files",
-                    accept: { "text/markdown": [".md", ".markdown"] }
-                }]
-            });
-            const file = await fileHandle.getFile();
-            const text = await file.text();
-            easyMDE.value(text);
-            currentFileHandle = fileHandle;
-            if (isAutoSaveEnabled) {
-                setupAutoSave(); // Only start auto-save if enabled
+        if (window.electron) {
+            try {
+                const result = await window.electron.ipcRenderer.invoke('open-file');
+                if (result.success) {
+                    easyMDE.value(result.content);
+                    currentFilePath = result.filePath;
+                    if (isAutoSaveEnabled) {
+                        setupAutoSave();
+                    }
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (err) {
+                console.error("Error al abrir el archivo:", err);
+                alert("Error al abrir el archivo: " + err.message);
             }
-        } catch (err) {
-            console.error("Error al abrir el archivo:", err);
+        } else {
+            // Fallback para la versión web usando File System Access API
+            if (!window.showOpenFilePicker) {
+                alert("El API File System Access no está soportado en este navegador.");
+                return;
+            }
+            try {
+                const [fileHandle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: "Markdown Files",
+                        accept: { "text/markdown": [".md", ".markdown"] }
+                    }]
+                });
+                const file = await fileHandle.getFile();
+                const text = await file.text();
+                easyMDE.value(text);
+                currentFileHandle = fileHandle;
+                if (isAutoSaveEnabled) {
+                    setupAutoSave();
+                }
+            } catch (err) {
+                console.error("Error al abrir el archivo:", err);
+            }
         }
     });
 

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron')
 const path = require('path')
 const fs = require('fs')
 
@@ -84,8 +84,116 @@ async function createWindow() {
     }
   })
 
-  // Actualizar plantilla del menú con la configuración
-  const template = [
+  // Manejar guardado de archivo
+  ipcMain.handle('save-file', async (event, { content, filePath }) => {
+    try {
+      if (!filePath) {
+        const { filePath: newPath, canceled } = await dialog.showSaveDialog({
+          defaultPath: 'documento.md',
+          filters: [{ name: 'Markdown Files', extensions: ['md', 'markdown'] }]
+        });
+        
+        if (canceled || !newPath) {
+          return { success: false, error: 'No se seleccionó una ruta de archivo' };
+        }
+        
+        filePath = newPath;
+      }
+      
+      await fs.promises.writeFile(filePath, content, 'utf8');
+      lastSavedFilePath = filePath;
+      store.set('lastOpenedFile', filePath);
+      return { success: true, filePath };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Manejar apertura de archivo
+  ipcMain.handle('open-file', async () => {
+    try {
+      const { filePaths, canceled } = await dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: [{ name: 'Markdown Files', extensions: ['md', 'markdown'] }]
+      });
+
+      if (canceled || filePaths.length === 0) {
+        return { success: false, error: 'No se seleccionó ningún archivo' };
+      }
+
+      const filePath = filePaths[0];
+      const content = await fs.promises.readFile(filePath, 'utf8');
+      lastSavedFilePath = filePath;
+      store.set('lastOpenedFile', filePath);
+      return { success: true, content, filePath };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Funciones de exportación
+  ipcMain.handle('export-html', async (event, content) => {
+    try {
+      const { filePath } = await dialog.showSaveDialog({
+        defaultPath: 'documento.html',
+        filters: [{ name: 'Archivos HTML', extensions: ['html'] }]
+      });
+
+      if (filePath) {
+        await fs.promises.writeFile(filePath, content, 'utf8');
+        return { success: true };
+      }
+      return { success: false, error: 'No se seleccionó una ruta de archivo' };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('export-pdf', async (event) => {
+    try {
+      const { filePath } = await dialog.showSaveDialog({
+        defaultPath: 'documento.pdf',
+        filters: [{ name: 'Archivos PDF', extensions: ['pdf'] }]
+      });
+
+      if (!filePath) {
+        return { success: false, error: 'No se seleccionó una ruta de archivo' };
+      }
+
+      const win = BrowserWindow.fromWebContents(event.sender);
+      const success = await new Promise((resolve) => {
+        win.webContents.print(
+          {
+            silent: false,
+            printBackground: true,
+            deviceName: '',
+            margins: {
+              marginType: 'custom',
+              top: 0.4,
+              bottom: 0.4,
+              left: 0.4,
+              right: 0.4
+            },
+            landscape: false
+          },
+          (success, reason) => {
+            resolve(success);
+          }
+        );
+      });
+
+      if (success) {
+        return { success: true };
+      } else {
+        return { success: false, error: 'Error al generar el PDF' };
+      }
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Crear menú de la aplicación
+  const menuTemplate = [
     {
       label: 'File',
       submenu: [
@@ -114,7 +222,9 @@ async function createWindow() {
         {
           label: 'Settings',
           click: () => win.webContents.send('show-settings')
-        }
+        },
+        { type: 'separator' },
+        { role: 'quit' }
       ]
     },
     {
@@ -143,37 +253,25 @@ async function createWindow() {
           click: () => win.webContents.send('menu-format', 'link')
         }
       ]
-    },
-    {
-      label: 'View',
-      submenu: [
-        { role: 'reload' },
-        { role: 'forceReload' },
-        { role: 'toggleDevTools' },
-        { type: 'separator' },
-        { role: 'resetZoom' },
-        { role: 'zoomIn' },
-        { role: 'zoomOut' },
-        { type: 'separator' },
-        { role: 'togglefullscreen' }
-      ]
     }
-  ]
+  ];
 
-  const menu = Menu.buildFromTemplate(template)
-  Menu.setApplicationMenu(menu)
+  const menu = Menu.buildFromTemplate(menuTemplate);
+  Menu.setApplicationMenu(menu);
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow();
 
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
-  }
-})
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit()
+    app.quit();
   }
-})
+});
