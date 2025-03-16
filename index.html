@@ -8,24 +8,6 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <script>
-    // Registrar el Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(registration => {
-            console.log('Service Worker registrado exitosamente:', registration.scope);
-          })
-          .catch(error => {
-            console.log('Error al registrar el Service Worker:', error);
-          });
-      });
-    }
-
-    if (window.electron) {
-      document.documentElement.classList.add('electron-app');
-    }
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
   <script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
   <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
@@ -39,8 +21,8 @@
       <button id="exportHTMLButton" class="hvr-grow">Export to HTML</button>
       <button id="autoSaveToggle" class="hvr-grow">Auto-save: ON</button>
       <select id="previewMode" class="hvr-grow">
-        <option value="disabled">Vista previa basica</option>
-        <option value="split">Vista previa dividida</option>
+        <option value="disabled">Basic preview</option>
+        <option value="split">Split preview</option>
       </select>
     </div>
   </header>
