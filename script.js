@@ -40,6 +40,13 @@ document.addEventListener("DOMContentLoaded", async function() {
     const previewPanel = document.getElementById('preview');
     const previewModeSelect = document.getElementById('previewMode');
 
+    // Configurar showdown para soportar tablas
+    const converter = new showdown.Converter({
+        tables: true,
+        tasklists: true,
+        strikethrough: true
+    });
+
     function updatePreview() {
         const content = easyMDE.value();
         previewPanel.innerHTML = converter.makeHtml(content);
@@ -65,13 +72,6 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     // Initialize in disabled mode
     editorContainer.classList.add('preview-disabled');
-
-    // Configurar showdown para soportar tablas
-    const converter = new showdown.Converter({
-        tables: true,
-        tasklists: true,
-        strikethrough: true
-    });
 
     // Funciones de edición
     document.getElementById('boldButton').addEventListener('click', () => {
