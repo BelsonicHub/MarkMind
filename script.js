@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         },
         tabSize: 4,
         renderingConfig: {
-            singleLineBreaks: false,
+            singleLineBreaks: true,  // Habilitar saltos de línea simples
             codeSyntaxHighlighting: true
         },
         toolbar: [
@@ -44,7 +44,9 @@ document.addEventListener("DOMContentLoaded", async function() {
     const converter = new showdown.Converter({
         tables: true,
         tasklists: true,
-        strikethrough: true
+        strikethrough: true,
+        simpleLineBreaks: true,  // Habilitar saltos de línea simples
+        parseImgDimensions: true
     });
 
     function updatePreview() {
@@ -368,6 +370,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             parseImgDimensions: true,
             simplifiedAutoLink: true,
             ghCompatibleHeaderId: true,
+            simpleLineBreaks: true,  // Habilitar saltos de línea simples
             extensions: ['tables']
         });
         converter.setFlavor('github');
