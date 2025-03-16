@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <script>
-    // Detectar Electron inmediatamente
     if (window.electron) {
       document.documentElement.classList.add('electron-app');
     }
@@ -31,6 +30,7 @@
       </select>
     </div>
   </header>
+
   <div class="edit-bar">
     <button id="boldButton" class="hvr-grow">Bold</button>
     <button id="italicButton" class="hvr-grow">Italic</button>
@@ -41,10 +41,12 @@
     <button id="codeButton" class="hvr-grow">Code</button>
     <button id="tableButton" class="hvr-grow">Table</button>
   </div>
+  
   <div id="editorContainer">
     <textarea id="editor"></textarea>
     <div id="preview" class="preview-panel"></div>
   </div>
+
   <div id="hiddenContent" style="display:none; padding: 20px;"></div>
   <script src="script.js"></script>
 </body>

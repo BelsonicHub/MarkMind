@@ -357,3 +357,15 @@ body.dark .preview-panel pre {
     max-width: 100%;
     height: auto;
 }
+
+/* Se eliminaron los estilos de pestañas */
+
+/* Ajustes para la versión sin pestañas */
+html.electron-app body {
+    display: block;
+}
+
+/* Ajustar altura del editor */
+html.electron-app .CodeMirror {
+    height: calc(100vh - 150px) !important;
+}

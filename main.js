@@ -198,6 +198,12 @@ async function createWindow() {
       label: 'File',
       submenu: [
         {
+          label: 'New Tab',
+          accelerator: 'CmdOrCtrl+T',
+          click: () => win.webContents.send('new-tab-triggered')
+        },
+        { type: 'separator' },
+        {
           label: 'Open',
           accelerator: 'CmdOrCtrl+O',
           click: () => win.webContents.send('menu-open')

@@ -10,7 +10,10 @@ contextBridge.exposeInMainWorld('electron', {
                 'export-pdf',
                 'export-html',
                 'save-file',
-                'open-file'
+                'open-file',
+                'new-tab',
+                'close-tab',
+                'switch-tab'
             ];
             if (validChannels.includes(channel)) {
                 return ipcRenderer.invoke(channel, ...args)
@@ -25,7 +28,10 @@ contextBridge.exposeInMainWorld('electron', {
                 'menu-format',
                 'menu-preview-mode',
                 'settings-updated',
-                'show-settings'
+                'show-settings',
+                'new-tab-triggered',
+                'tab-closed',
+                'tab-switched'
             ];
             if (validChannels.includes(channel)) {
                 ipcRenderer.on(channel, (event, ...args) => func(...args))
