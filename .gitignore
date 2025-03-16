@@ -30,12 +30,13 @@ pids
 .env.test.local
 .env.production.local
 
-# IDE - VSCode
+# IDE - VSCode-Project IDX
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+.idx
 
 # OS generated files
 .DS_Store

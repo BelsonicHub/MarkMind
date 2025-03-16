@@ -1,25 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <!-- Define the character set for the document -->
   <meta charset="UTF-8">
   <link rel="manifest" href="manifest.json">
+  <!-- Set the title of the document -->
   <title>NotepadMD</title>
+  <!-- Link to the EasyMDE CSS for the Markdown editor -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+  <!-- Link to the custom CSS file for styling -->
   <link rel="stylesheet" href="style.css">
+  <!-- Link to the Hover.css library for hover effects -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/hover.css/2.3.1/css/hover-min.css" />
+  <!-- Link to the Font Awesome library for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- Link to the EasyMDE JavaScript for the Markdown editor -->
   <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <!-- Link to the Showdown JavaScript for Markdown to HTML conversion -->
   <script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
+  <!-- Link to the Turndown JavaScript for HTML to Markdown conversion -->
   <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
 </head>
 <body>
+  <!-- Header section for options -->
   <header class="options-header">
     <div class="options-bar">
+      <!-- Buttons for file operations and options -->
       <button id="downloadButton" class="hvr-grow">Save Markdown</button>
       <button id="openFileButton" class="hvr-grow">Open Markdown</button>
       <button id="exportPDFButton" class="hvr-grow">Export to PDF</button>
       <button id="exportHTMLButton" class="hvr-grow">Export to HTML</button>
       <button id="autoSaveToggle" class="hvr-grow">Auto-save: ON</button>
+      <!-- Select element for preview mode -->
       <select id="previewMode" class="hvr-grow">
         <option value="disabled">Basic preview</option>
         <option value="split">Split preview</option>
@@ -31,6 +43,7 @@
   <div class="edit-bar">
     <button id="boldButton" class="hvr-grow">Bold</button>
     <button id="italicButton" class="hvr-grow">Italic</button>
+    <!-- Buttons for markdown formatting -->
     <button id="headingButton" class="hvr-grow">Heading</button>
     <button id="linkButton" class="hvr-grow">Link</button>
     <button id="imageButton" class="hvr-grow">Image</button>
@@ -39,11 +52,15 @@
     <button id="tableButton" class="hvr-grow">Table</button>
   </div>
   
+  <!-- Container for the editor and preview -->
   <div id="editorContainer">
+      <!-- Textarea for the markdown editor -->
     <textarea id="editor"></textarea>
+    <!-- Div for the live preview -->
     <div id="preview" class="preview-panel"></div>
   </div>
 
+  <!-- Hidden div for temporary content -->
   <div id="hiddenContent" style="display:none; padding: 20px;"></div>
   <script src="script.js"></script>
 </body>
